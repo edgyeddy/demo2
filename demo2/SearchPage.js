@@ -9,6 +9,7 @@ import {
   Button,
   ActivityIndicator,
   Image,
+  Keyboard,
 } from 'react-native';
 
 function countProperties(obj) {
@@ -16,7 +17,7 @@ function countProperties(obj) {
 }
 function urlForQueryAndPage(key1, value1, key2, value2, pageNumber) {
   const data = {
-    page: pageNumber,
+    //page: pageNumber,
   };
 	/*
   const data = {
@@ -46,8 +47,8 @@ export default class SearchPage extends Component<{}> {
     super(props);
     this.state = {
       message: '',
-      searchStringLocation: 'barcelona',
-      searchStringDescription: 'javascript',
+      searchStringLocation: '', // 'barcelona',
+      searchStringDescription: '', // 'javascript',
       isLoading: false,
     };
   }
@@ -65,20 +66,21 @@ export default class SearchPage extends Component<{}> {
     fetch(query)
       .then(response => response.json())
       //.then(json => this._handleResponse(json.response))
-      .then(json => this._handleResponse(json))
+      .then(json => this._handleResponse(query, json))
       .catch(error =>
         this.setState({
           isLoading: false,
           message: 'Something bad happened:\n' + error
         }));
   };
-  _handleResponse = (response) => {
+  _handleResponse = (query, response) => {
     var num = countProperties(response);
+    console.log("Query=" + query);
     console.log("Response=" + num);
     // TODO: Amagar missatge mentre navega a nova pàgina.
     this.setState({ isLoading: false, message: 'Last search returned ' + num + ' postings' });
     this.props.navigation.navigate(
-      'Results', { listings: response });
+      'Results', { url: query, listings: response });
     /*
     if (response.application_response_code.substr(0, 1) === '1') {
       console.log('Properties found: ' + response.listings.length);
@@ -97,6 +99,7 @@ export default class SearchPage extends Component<{}> {
   };
 
   _onSearchPressed = () => {
+    Keyboard.dismiss();
     //const query = urlForQueryAndPage('place_name', this.state.searchString, 1);
     const query = urlForQueryAndPage('location', this.state.searchStringLocation, 'description', this.state.searchStringDescription, 0);
     this._executeQuery(query);

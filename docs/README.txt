@@ -1,7 +1,7 @@
 
 dm - 2h installing react-native for linux, unsuccessfully.
-dx - 2.5h following tutorial to completion. Scroll (non-infinite) list crashes, web-view pending.
-dj - 1h testing style, <-- Fer commit a github
+dx - 2.5h following tutorial to completion. Scroll (non-infinite) list crashes, webview pending.
+dj - 2.5h learning styles, learning basic javascript, implementing navigation to webview.
 dv -
 
 
@@ -10,6 +10,7 @@ DATA SOURCE:
 	
 	
 URL:
+	https://reactnativecode.com/infinite-list-flatlist-pagination-load-more-data/
 	https://jgilfelt.github.io/AndroidAssetStudio/
 	https://jobs.github.com/api
 	https://www.raywenderlich.com/178012/react-native-tutorial-building-android-apps-javascript

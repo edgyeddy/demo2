@@ -30,7 +30,7 @@ export default class Detail extends Component<{}> {
         //source={{ uri: 'https://github.com/facebook/react-native' }}
         //onLoadStart={this._onLoadStart}
         source={{ uri: url }}
-        style={{ marginTop: 0 }}
+        style={{ marginTop: 0, width: '100%' }}
       />
     );
   }
