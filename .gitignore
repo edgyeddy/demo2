@@ -5,3 +5,5 @@ demo2/.flowconfig
 demo2/.buckconfig
 demo2/.babelrc
 demo2/.watchmanconfig
+demo2/MyApplication/
+demo2/release/output.json
