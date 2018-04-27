@@ -1,3 +1,6 @@
+/**
+ * LICENSE: http://www.wtfpl.net/txt/copying/
+ */
 'use strict';
 
 import React, { Component } from 'react';
@@ -11,44 +14,74 @@ import {
   Image,
   Keyboard,
 } from 'react-native';
-
+/*****************************************************************************/
+/**
+ * Constants
+ */
+const rootUrl = 'https://jobs.github.com/positions.json?';
+const demoLocation = ''; // 'london'
+const demoDescription = ''; // 'javascript'
+const title = 'demo2'
+const colorPrimary = '#48BBEC';
+const colorText = '#656565';
+class Constants {
+  static get rootUrl() {
+    return rootUrl;
+  }
+  static get demoLocation() {
+    return demoLocation;
+  }
+  static get demoDescription() {
+    return demoDescription;
+  }
+  static get title() {
+    return title;
+  }
+  static get colorPrimary() {
+    return colorPrimary;
+  }
+  static get colorText() {
+    return colorText;
+  }
+}
+/*****************************************************************************/
+/**
+ * Given an object, returns the number of elements (keys) it has.
+ */
 function countProperties(obj) {
   return Object.keys(obj).length;
 }
+/*****************************************************************************/
+/**
+ * Generates a URL + query string from a set of 2 keyvalues (location and description).
+ */
 function urlForQueryAndPage(key1, value1, key2, value2, pageNumber) {
   const data = {
-    //page: pageNumber,
+    //page: pageNumber, Unused for now due to the incremental scroll (it has its own page variable).
   };
-	/*
-  const data = {
-      country: 'uk',
-      pretty: '1',
-      encoding: 'json',
-      listing_type: 'buy',
-      action: 'search_listings',
-      page: pageNumber,
-  };
-  */
+
   data[key1] = value1;
   data[key2] = value2;
 
-  const querystring = Object.keys(data)
+  // Converts keyvalues in map to a query string.
+  const querystring = Object
+    .keys(data)
     .map(key => key + '=' + encodeURIComponent(data[key]))
     .join('&');
 
-  //return 'https://api.nestoria.co.uk/api?' + querystring;
-  return 'https://jobs.github.com/positions.json?' + querystring;
+  return Constants.rootUrl + querystring;
 }
+/*****************************************************************************/
 export default class SearchPage extends Component<{}> {
   static navigationOptions = {
-    title: 'demo2',
+    title: Constants.title,
   };
   constructor(props) {
     super(props);
     this.state = {
       message: '',
-      searchStringLocation: '', // 'barcelona',
-      searchStringDescription: '', // 'javascript',
+      searchStringLocation: Constants.demoLocation,
+      searchStringDescription: Constants.demoDescription,
       isLoading: false,
     };
   }
@@ -61,11 +94,10 @@ export default class SearchPage extends Component<{}> {
     //console.log('Current: '+this.state.searchStringDescription+', Next: '+event.nativeEvent.text);
   };
   _executeQuery = (query) => {
-    console.log(query);
+    console.log("_executeQuery() : " + query);
     this.setState({ isLoading: true });
     fetch(query)
       .then(response => response.json())
-      //.then(json => this._handleResponse(json.response))
       .then(json => this._handleResponse(query, json))
       .catch(error =>
         this.setState({
@@ -81,26 +113,9 @@ export default class SearchPage extends Component<{}> {
     this.setState({ isLoading: false, message: 'Last search returned ' + num + ' postings' });
     this.props.navigation.navigate(
       'Results', { url: query, listings: response });
-    /*
-    if (response.application_response_code.substr(0, 1) === '1') {
-      console.log('Properties found: ' + response.listings.length);
-    } else {
-      this.setState({ message: 'Location not recognized; please try again.'});
-    }
-    */
-    /*
-    var num = response.length;
-    if (num > 0) {
-      console.log('Properties found: ' + num);
-    } else {
-      this.setState({ message: 'Location not recognized; please try again.'});
-    }
-    */
   };
-
   _onSearchPressed = () => {
     Keyboard.dismiss();
-    //const query = urlForQueryAndPage('place_name', this.state.searchString, 1);
     const query = urlForQueryAndPage('location', this.state.searchStringLocation, 'description', this.state.searchStringDescription, 0);
     this._executeQuery(query);
   };
@@ -131,9 +146,9 @@ export default class SearchPage extends Component<{}> {
         <Button
           style={styles.button}
           onPress={this._onSearchPressed}
-          color='#48BBEC'
+          color={Constants.colorPrimary}
           title='Go'
-        />
+      />
         <Image source={require('./Resources/my_icon.png')} style={styles.image} />
         <Text style={styles.description}>{this.state.message}</Text>
         {spinner}
@@ -141,13 +156,14 @@ export default class SearchPage extends Component<{}> {
     );
   }
 }
+/*****************************************************************************/
 const styles = StyleSheet.create({
   description: {
     marginTop: 10,
     marginBottom: 10,
     fontSize: 18,
     textAlign: 'center',
-    color: '#656565'
+    color: Constants.colorText,
   },
   container: {
     flexDirection: 'column',
@@ -156,56 +172,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  button: {
-    /*
-    flexDirection: 'row',    
-    height: 36,
-    padding: 4,
-    //marginRight: 5,
-    //flex:1,
-    //flexGrow: 1,
-    fontSize: 18,
-    margin: 5,
-    alignSelf: 'stretch',
-    flex: 1,
-    */
-    /*
-    
-    flexGrow: 1,
-    margin: 5,
-    alignSelf: 'stretch',
-    textAlign: 'center',
-    */
+  button: {        
   },
   flowRight: {
     margin: 5,
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'stretch',
-    //flex: 1,    
+    alignSelf: 'stretch',    
   },
   flowVertical: {
-    /*
-    //flex: 1,
-    margin: 5,
-    flexDirection: 'column',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    */
+   
   },
   searchInput: {
     margin: 5,
     alignSelf: 'stretch',
     height: 36,
     padding: 4,
-    //marginRight: 5,
-    //flex:1,
-    //flexGrow: 1,
     fontSize: 18,
     borderWidth: 1,
-    borderColor: '#48BBEC',
+    borderColor: Constants.colorPrimary,
     borderRadius: 8,
-    color: '#48BBEC',
+    color: Constants.colorPrimary,
   },
   image: {
     marginTop: 10,
@@ -213,3 +200,4 @@ const styles = StyleSheet.create({
     height: 128,
   },
 });
+/*****************************************************************************/

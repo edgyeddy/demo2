@@ -14,6 +14,25 @@ import {
   Text,
 } from 'react-native';
 /*****************************************************************************/
+const title = 'demo2 - Results';
+const colorPrimary = '#48BBEC';
+const colorSecondary = '#F44336';
+const colorText = '#656565';
+class Constants {
+  static get title() {
+    return title;
+  }
+  static get colorPrimary() {
+    return colorPrimary;
+  }
+  static get colorSecondary() {
+    return colorSecondary;
+  }
+  static get colorText() {
+    return colorText;
+  }
+}
+/*****************************************************************************/
 /*
  * JavaScript Pretty Date
  * Copyright (c) 2011 John Resig (ejohn.org)
@@ -23,9 +42,9 @@ import {
 // Takes an ISO time and returns a string representing how
 // long ago the date represents.
 function prettyDate(time) {
-  var date = new Date(Date.parse(time));
+  var date = new Date(Date.parse(time)); // new code
   //console.log("TIME/DATE=" + time + " --> " + date);
-  //var date = new Date((time || "").replace(/-/g, "/").replace(/[TZ]/g, " ")),
+  //var date = new Date((time || "").replace(/-/g, "/").replace(/[TZ]/g, " ")), // original code
   var diff = (((new Date()).getTime() - date.getTime()) / 1000),
     day_diff = Math.floor(diff / 86400);
 
@@ -39,10 +58,27 @@ function prettyDate(time) {
 /*****************************************************************************/
 class ListItem extends React.PureComponent {
   static navigationOptions = {
-    title: 'Results',
+    title: Constants.title,
   };
+  constructor() {
+    super();
+
+    this.state =
+      {
+        hasImage: false,
+      }
+  }
   _onPress = () => {
     this.props.onPressItem(this.props.item.url, this.props.index);
+  }
+
+  _onThumbnailError = () => {
+    console.log("_onThumbnailError() URL: " + this.source.url)
+  }
+
+  componentDidMount = () => {
+    const item = this.props.item;
+    this.setState({ hasImage: item.company_logo != null });    
   }
 
   render() {
@@ -50,13 +86,14 @@ class ListItem extends React.PureComponent {
     const date = prettyDate(item.created_at);
     const url = item.url;
     const company_location = item.company + " @ " + item.location;
+    const showThumbOrPlaceholder = this.state.hasImage ? <Image style={styles.thumb} source={{ uri: item.company_logo }} /> : <View style={styles.thumbPlaceholder} />;
     return (
       <TouchableHighlight
         onPress={this._onPress}
         underlayColor='#dddddd'>
         <View>
           <View style={styles.rowContainer}>
-            <Image style={styles.thumb} source={{ uri: item.company_logo }} />
+            {showThumbOrPlaceholder}
             <View style={styles.textContainer}>
               <Text style={styles.title}
                 numberOfLines={1}>{item.title}</Text>
@@ -74,90 +111,79 @@ class ListItem extends React.PureComponent {
 // This screen
 /*****************************************************************************/
 export default class SearchResults extends Component {
-  
+
   static navigationOptions = {
-    title: 'Results',
+    title: Constants.title,
   };
 
-  constructor()
-  {
-      super();
- 
-      this.state =
+  constructor() {
+    super();
+
+    this.state =
       {
-          isLoading: true,
-          JSON_from_server: [],
-          fetching_Status: false,
+        isLoading: true,
+        JSON_from_server: [],
+        fetching_Status: false,
       }
- 
-      this.page = -1
+
+    this.page = -1
   }
 
-  componentDidMount()
-  {
-      this.page = this.page + 1;
- 
-      var url = this.state.url  + '&page=' + this.page;
-              console.log("A SET STATE URL=" + url);
-      //fetch('https://reactnativecode.000webhostapp.com/counting_table.php?page=' + this.page)
-      fetch(url)
+  componentDidMount() {
+    this.page = this.page + 1;
+
+    var url = this.state.url + '&page=' + this.page; // Add &page=x
+    console.log("A SET STATE URL=" + url);
+    fetch(url)
       .then((response) => response.json())
-      .then((responseJson) =>
-      {
-          this.setState({ JSON_from_server: [ ...this.state.JSON_from_server, ...responseJson ], isLoading: false });
+      .then((responseJson) => {
+        this.setState({ JSON_from_server: [...this.state.JSON_from_server, ...responseJson], isLoading: false });
       })
-      .catch((error) =>
-      {
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  fetch_more_data_from_server = () => {
+    this.page = this.page + 1;
+
+    this.setState({ fetching_Status: true }, () => {
+      var url = this.state.url + '&page=' + this.page; // Add &page=x
+      console.log("B SET STATE URL=" + url);
+      fetch(url)
+        .then((response) => response.json())
+        .then((responseJson) => {
+          this.setState({ JSON_from_server: [...this.state.JSON_from_server, ...responseJson], fetching_Status: false });
+        })
+        .catch((error) => {
           console.error(error);
-      });
+        });
+
+    });
   }
 
-  fetch_more_data_from_server =()=>
-  {        
-      this.page = this.page + 1;
- 
-      this.setState({ fetching_Status: true }, () =>
-      {
-              var url = this.state.url  + '&page=' + this.page;
-              console.log("B SET STATE URL=" + url);
-              //fetch('https://reactnativecode.000webhostapp.com/counting_table.php?page=' + this.page)
-              fetch(url)
-              .then((response) => response.json())
-              .then((responseJson) =>
-              {
-                  this.setState({ JSON_from_server: [ ...this.state.JSON_from_server, ...responseJson ], fetching_Status: false });
-              })
-              .catch((error) =>
-              {
-                  console.error(error);
-              });
-         
-      });
-  }
-
-  Render_Footer=()=>
-  {
+  Render_Footer = () => {
     return (
-        <View style = { styles.footerStyle }>
+      <View style={styles.footerStyle}>
 
-            <TouchableOpacity 
-                activeOpacity = { 0.7 } 
-                style = { styles.TouchableOpacity_style }
-                onPress = { this.fetch_more_data_from_server } 
-                >
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={styles.TouchableOpacity_style}
+          onPress={this.fetch_more_data_from_server}
+        >
 
-                <Text style = { styles.TouchableOpacity_Inside_Text }>Load More Data From Server</Text>
-                {
-                    ( this.state.fetching_Status )
-                    ?
-                        <ActivityIndicator color = "#fff" style = {{ marginLeft: 6 }} />
-                    :
-                        null
-                }
+          <Text style={styles.TouchableOpacity_Inside_Text}>Load more from server</Text>
+          {
+            (this.state.fetching_Status)
+              ?
+              <ActivityIndicator color="#fff" style={{ marginLeft: 6 }} />
+              :
+              null
+          }
 
-            </TouchableOpacity> 
+        </TouchableOpacity>
 
-        </View>
+      </View>
     )
   }
 
@@ -179,16 +205,16 @@ export default class SearchResults extends Component {
   };
 
   render() {
-    const { params } = this.props.navigation.state;    
+    const { params } = this.props.navigation.state;
     const url = params ? params.url : null;
     this.state.url = url;
     return (
       <FlatList
         //data={params.listings}
-        data = { this.state.JSON_from_server }
+        data={this.state.JSON_from_server}
         keyExtractor={this._keyExtractor}
         renderItem={this._renderItem}
-        ListFooterComponent = { this.Render_Footer }
+        ListFooterComponent={this.Render_Footer}
       />
     );
   }
@@ -197,6 +223,11 @@ export default class SearchResults extends Component {
 // Styles
 /*****************************************************************************/
 const styles = StyleSheet.create({
+  thumbPlaceholder: {
+    width: 80,
+    height: 80,
+    marginRight: 10
+  },
   thumb: {
     resizeMode: 'center',
     width: 80,
@@ -212,44 +243,45 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 14,
-    color: '#656565'
+    color: Constants.colorText,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#48BBEC'
+    color: Constants.colorPrimary,
   },
   company_location: {
     fontSize: 14,
-    color: '#656565'
+    color: Constants.colorText,
   },
   rowContainer: {
     flexDirection: 'row',
     padding: 10
   },
   footerStyle:
-  {
-    padding: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderTopWidth: 2,
-    borderTopColor: '#009688'
-  },
- 
+    {
+      padding: 7,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderTopWidth: 2,
+      borderTopColor: Constants.colorPrimary,
+    },
+
   TouchableOpacity_style:
-  {
-    padding: 7,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F44336',
-    borderRadius: 5,
-  },
- 
+    {
+      padding: 7,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: Constants.colorSecondary,
+      borderRadius: 5,
+    },
+
   TouchableOpacity_Inside_Text:
-  {
-    textAlign: 'center',
-    color: '#fff',
-    fontSize: 18
-  },
+    {
+      textAlign: 'center',
+      color: '#fff',
+      fontSize: 18
+    },
 });
+/*****************************************************************************/
